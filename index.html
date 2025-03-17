@@ -63,31 +63,42 @@
     const filterRequests = () => {
       const hoy = new Date();
       const hoyStr = hoy.toISOString().slice(0, 10);
-      const horaActual = hoy.getHours().toString().padStart(2, "0") + ":" + hoy.getMinutes().toString().padStart(2, "0");
+      const horaActual =
+              hoy.getHours().toString().padStart(2, "0") +
+              ":" +
+              hoy.getMinutes().toString().padStart(2, "0");
 
       const filtered = requests.filter(item => {
         const pos = item.hora.indexOf(" ");
-        const horaSolo = (pos > -1) ? item.hora.substring(0, pos) : item.hora;
+        const horaSolo = pos > -1 ? item.hora.substring(0, pos) : item.hora;
 
         if (showOld) {
-          return (item.fecha < hoyStr) ||
-                  (item.fecha === hoyStr && horaSolo < horaActual);
+          return (
+                  item.fecha < hoyStr ||
+                  (item.fecha === hoyStr && horaSolo < horaActual)
+          );
         } else {
-          return (item.fecha > hoyStr) ||
-                  (item.fecha === hoyStr && horaSolo >= horaActual);
+          return (
+                  item.fecha > hoyStr ||
+                  (item.fecha === hoyStr && horaSolo >= horaActual)
+          );
         }
       });
       setFilteredRequests(filtered);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = e => {
       e.preventDefault();
       const hoy = new Date();
       const hoyStr = hoy.toISOString().slice(0, 10);
-      const horaActual = hoy.getHours().toString().padStart(2, "0") + ":" + hoy.getMinutes().toString().padStart(2, "0");
+      const horaActual =
+              hoy.getHours().toString().padStart(2, "0") +
+              ":" +
+              hoy.getMinutes().toString().padStart(2, "0");
       const pos = formData.hora.indexOf(" ");
       const horaSolo = pos > -1 ? formData.hora.substring(0, pos) : formData.hora;
 
+      // Validación para no registrar con fecha/hora pasadas
       if (formData.fecha < hoyStr || (formData.fecha === hoyStr && horaSolo < horaActual)) {
         setErrorMsg("No se puede registrar con fecha/hora pasadas.");
         return;
@@ -95,6 +106,7 @@
       setErrorMsg("");
 
       if (!isEditing) {
+        // Crear nueva solicitud
         axios.post(API_URL, formData)
                 .then(resp => {
                   if (resp.data.error) {
@@ -106,6 +118,7 @@
                 })
                 .catch(err => setErrorMsg("Error al crear la solicitud: " + err.message));
       } else {
+        // Editar solicitud existente
         axios.put(API_URL, formData)
                 .then(resp => {
                   if (resp.data.error) {
@@ -119,9 +132,10 @@
       }
     };
 
-    const handleDelete = (solicitud) => {
+    const handleDelete = solicitud => {
       if (confirm("¿Desea eliminar la solicitud ID: " + solicitud.id + "?")) {
-        axios.delete(API_URL, { data: solicitud })
+        axios
+                .delete(API_URL, { data: solicitud })
                 .then(() => loadRequests())
                 .catch(err => console.log("Error al eliminar:", err));
       }
@@ -142,7 +156,7 @@
       new bootstrap.Modal(document.getElementById("solicitudModal")).show();
     };
 
-    const openEdit = (solicitud) => {
+    const openEdit = solicitud => {
       setIsEditing(true);
       setFormData({ ...solicitud });
       setErrorMsg("");
@@ -154,7 +168,7 @@
     };
 
     return (
-            <div
+            <div>
               <h1 className="text-center">Listado de Solicitudes</h1>
               <div className="d-flex justify-content-end mb-3">
                 <div className="form-check">
@@ -196,8 +210,18 @@
                           <td>{s.fecha}</td>
                           <td>{s.hora}</td>
                           <td>
-                            <button className="btn btn-secondary btn-sm me-2" onClick={() => openEdit(s)}>Editar</button>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(s)}>Eliminar</button>
+                            <button
+                                    className="btn btn-secondary btn-sm me-2"
+                                    onClick={() => openEdit(s)}
+                            >
+                              Editar
+                            </button>
+                            <button
+                                    className="btn btn-danger btn-sm"
+                                    onClick={() => handleDelete(s)}
+                            >
+                              Eliminar
+                            </button>
                           </td>
                         </tr>
                 ))}
@@ -227,7 +251,7 @@
                                   type="number"
                                   className="form-control"
                                   value={formData.matricula}
-                                  onChange={(e) => setFormData({ ...formData, matricula: e.target.value })}
+                                  onChange={e => setFormData({ ...formData, matricula: e.target.value })}
                                   required
                           />
                         </div>
@@ -237,7 +261,7 @@
                                   type="text"
                                   className="form-control"
                                   value={formData.nombre}
-                                  onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                                  onChange={e => setFormData({ ...formData, nombre: e.target.value })}
                                   required
                           />
                         </div>
@@ -247,7 +271,7 @@
                                   type="email"
                                   className="form-control"
                                   value={formData.correo}
-                                  onChange={(e) => setFormData({ ...formData, correo: e.target.value })}
+                                  onChange={e => setFormData({ ...formData, correo: e.target.value })}
                                   required
                           />
                         </div>
@@ -256,7 +280,7 @@
                           <select
                                   className="form-select"
                                   value={formData.laboratorio}
-                                  onChange={(e) => setFormData({ ...formData, laboratorio: e.target.value })}
+                                  onChange={e => setFormData({ ...formData, laboratorio: e.target.value })}
                                   required
                           >
                             <option value="">Seleccione</option>
@@ -270,7 +294,7 @@
                                   type="date"
                                   className="form-control"
                                   value={formData.fecha}
-                                  onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
+                                  onChange={e => setFormData({ ...formData, fecha: e.target.value })}
                                   required
                           />
                         </div>
@@ -279,7 +303,7 @@
                           <select
                                   className="form-select"
                                   value={formData.hora}
-                                  onChange={(e) => setFormData({...formData, hora: e.target.value})}
+                                  onChange={e => setFormData({ ...formData, hora: e.target.value })}
                                   required
                           >
                             <option value="">Seleccionar hora</option>
@@ -302,7 +326,11 @@
                         <button type="submit" className="btn btn-primary me-2">
                           Guardar
                         </button>
-                        <button type="reset" className="btn btn-secondary" onClick={() => setErrorMsg("")}>
+                        <button
+                                type="reset"
+                                className="btn btn-secondary"
+                                onClick={() => setErrorMsg("")}
+                        >
                           Limpiar
                         </button>
                       </form>
@@ -314,10 +342,10 @@
     );
   }
 
-  ReactDOM.render(<App/>, document.getElementById("root"));
+  ReactDOM.render(<App />, document.getElementById("root"));
 </script>
 
-<!-- Bootstrap JS (Popper incluido)-->
+<!-- Bootstrap JS (Popper incluido) -->
 <script
         src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
         crossorigin="anonymous">
