@@ -195,7 +195,10 @@
 
 <!-- Aquí seteamos la URL de la API en localStorage -->
 <script>
-  localStorage.setItem("API_URL", "https://cy1czdng6d.execute-api.us-east-1.amazonaws.com/prodlm10/requests");
+  localStorage.setItem(
+          "API_URL",
+          "https://cy1czdng6d.execute-api.us-east-1.amazonaws.com/prodlm10/requests"
+  );
   const API_URL = localStorage.getItem("API_URL") || "/api/solicitudes/";
 </script>
 
@@ -228,50 +231,79 @@
     },
     methods: {
       loadRequests() {
-        axios.get(API_URL)
-                .then(response => {
+        axios
+                .get(API_URL)
+                .then((response) => {
+                  // Ajusta el nombre de la propiedad según tu respuesta.
+                  // Aquí suponemos que viene en 'response.data.solicitudes'
                   this.requests = response.data.solicitudes || [];
                   this.filterRequests();
                 })
-                .catch(error => {
+                .catch((error) => {
                   console.log("Error al cargar solicitudes:", error);
                 });
       },
+
       filterRequests() {
         const hoy = new Date();
         const hoyStr = hoy.toISOString().slice(0, 10);
-        const horaActual = hoy.getHours().toString().padStart(2, "0") + ":" + hoy.getMinutes().toString().padStart(2, "0");
+        const horaActual =
+                hoy.getHours().toString().padStart(2, "0") +
+                ":" +
+                hoy.getMinutes().toString().padStart(2, "0");
 
-        this.filteredRequests = this.requests.filter(item => {
+        this.filteredRequests = this.requests.filter((item) => {
           const pos = item.hora.indexOf(" ");
           const horaSolo = pos > -1 ? item.hora.substring(0, pos) : item.hora;
+
+          // Comparación "pasados" vs "futuros" como strings (simplificado):
           if (this.showOld) {
-            // Mostrar pasados
-            return (item.fecha < hoyStr || (item.fecha === hoyStr && horaSolo < horaActual));
+            return (
+                    item.fecha < hoyStr ||
+                    (item.fecha === hoyStr && horaSolo < horaActual)
+            );
           } else {
-            // Mostrar futuros o actuales
-            return (item.fecha > hoyStr || (item.fecha === hoyStr && horaSolo >= horaActual));
+            return (
+                    item.fecha > hoyStr ||
+                    (item.fecha === hoyStr && horaSolo >= horaActual)
+            );
           }
         });
       },
-      handleSubmit() {
-        // Validación de fecha/hora pasada
-        const hoy = new Date();
-        const hoyStr = hoy.toISOString().slice(0, 10);
-        const horaActual = hoy.getHours().toString().padStart(2, "0") + ":" + hoy.getMinutes().toString().padStart(2, "0");
-        const pos = this.formData.hora.indexOf(" ");
-        const horaSolo = pos > -1 ? this.formData.hora.substring(0, pos) : this.formData.hora;
 
-        if (this.formData.fecha < hoyStr || (this.formData.fecha === hoyStr && horaSolo < horaActual)) {
+      handleSubmit() {
+        // 1) Parseamos la fecha y hora seleccionadas:
+        const selectedDate = new Date(this.formData.fecha);
+        if (isNaN(selectedDate.getTime())) {
+          this.errorMsg = "Fecha inválida";
+          return;
+        }
+
+        // Extraer hora "HH:MM" de la opción elegida:
+        const pos = this.formData.hora.indexOf(" ");
+        const horaSolo = pos > -1
+                ? this.formData.hora.substring(0, pos)  // "21:00"
+                : this.formData.hora;                  // "21:00"
+        // Dividir en hora y minuto:
+        const [hh, mm] = horaSolo.split(":");
+        // Asignamos hora y minutos a la fecha:
+        selectedDate.setHours(hh || 0, mm || 0, 0);
+
+        // 2) Validar fecha/hora pasada vs. 'ahora':
+        const now = new Date();
+        if (selectedDate < now) {
           this.errorMsg = "No se puede registrar con fecha/hora pasadas.";
           return;
         }
+
         this.errorMsg = "";
 
+        // 3) Guardar o editar
         if (!this.isEditing) {
           // Crear nueva solicitud
-          axios.post(API_URL, this.formData)
-                  .then(resp => {
+          axios
+                  .post(API_URL, this.formData)
+                  .then((resp) => {
                     if (resp.data.error) {
                       this.errorMsg = resp.data.mensajeError || "Error desconocido";
                     } else {
@@ -279,13 +311,14 @@
                       this.loadRequests();
                     }
                   })
-                  .catch(err => {
+                  .catch((err) => {
                     this.errorMsg = "Error al crear la solicitud: " + err.message;
                   });
         } else {
           // Editar solicitud
-          axios.put(API_URL, this.formData)
-                  .then(resp => {
+          axios
+                  .put(API_URL, this.formData)
+                  .then((resp) => {
                     if (resp.data.error) {
                       this.errorMsg = resp.data.mensajeError || "Error desconocido";
                     } else {
@@ -293,22 +326,25 @@
                       this.loadRequests();
                     }
                   })
-                  .catch(err => {
+                  .catch((err) => {
                     this.errorMsg = "Error al actualizar la solicitud: " + err.message;
                   });
         }
       },
+
       handleDelete(solicitud) {
         if (confirm("¿Desea eliminar la solicitud ID: " + solicitud.id + "?")) {
-          axios.delete(API_URL, { data: solicitud })
+          axios
+                  .delete(API_URL, { data: solicitud })
                   .then(() => {
                     this.loadRequests();
                   })
-                  .catch(err => {
+                  .catch((err) => {
                     console.log("Error al eliminar:", err);
                   });
         }
       },
+
       openNew() {
         this.isEditing = false;
         this.formData = {
@@ -324,12 +360,15 @@
         // Mostramos el modal de Bootstrap
         new bootstrap.Modal(document.getElementById("solicitudModal")).show();
       },
+
       openEdit(solicitud) {
         this.isEditing = true;
+        // Copiamos campos a formData
         this.formData = { ...solicitud };
         this.errorMsg = "";
         new bootstrap.Modal(document.getElementById("solicitudModal")).show();
       },
+
       closeModal() {
         document.getElementById("closeModalButton").click();
       }
