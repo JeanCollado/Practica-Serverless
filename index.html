@@ -11,7 +11,7 @@
   />
   <!-- React y ReactDOM desde CDN -->
   <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react.production.min.js"></script>
   <!-- AXIOS -->
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
   <!-- Babel para compilar JSX en el navegador -->
@@ -20,6 +20,11 @@
 
 <body>
 <div class="container mt-3" id="root"></div>
+
+<!-- Este script setea la URL de la API en localStorage -->
+<script>
+  localStorage.setItem("API_URL", "https://cy1czdng6d.execute-api.us-east-1.amazonaws.com/prod/requests");
+</script>
 
 <!-- Aquí usamos type="text/babel" para que Babel compile JSX en el navegador -->
 <script type="text/babel">
